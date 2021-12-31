@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Multi-Asset Risk</title>
+
+  <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+  <link rel="stylesheet" href="css/bulmaswatch.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@creativebulma/bulma-tooltip@1.2.0/dist/bulma-tooltip.min.css" />
+
+  <style>
+    .main {
+      /*display: flex;*/
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    .positoin-sizes-container {
+      /*max-height:  50vh;
+      max-width: 100vh;*/
+      /*width: 200px;*/
+      /*height: 100px;*/
+      /*overflow-y:  auto;*/
+    }
+
+    .noBorder {
+      border:  none;
+      border-radius: 30px;
+      box-background-color:  none;
+    }
+
+    .progress {
+      border-radius: 5;
+      background-color: blue;
+      color:  white;
+    }
+
+    .chartSize {
+      max-height: 50vh;
+      max-width: 50vh;
+    }
+
+    .monteCarloChartSize {
+      max-height: 85vh;
+      /*max-width: 85vh;*/
+    }
+
+  </style>
+</head>
+<body>
+  <div class="main">
+    <!-- Header -->
+    <section class="section pb-0">
+      <div class="columns">
+        <div class="column is-3" style="text-align:left;">
+          <button class="button is-rounded"><a href="single-asset.html">Single &nbsp Asset</a></button>
+        </div>
+        <div class="column is-6 has-text-centered">
+          <p class="title is-3">&#9888 DyDx Risk Station &#9888</p>
+        </div>
+        <div class="column is-3" style="text-align:right;">
+          <button class="button is-rounded"><a href="sausage.html">Documentation</a></button>
+        </div>
+
+      </div>
+      
+      <div class="columns">
+        <div class="column has-text-centered">
+          <p><i>The comprehensive DyDx risk calculator.</i></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="tile is-ancestor is-vertical">
+        <!-- User Inputs -->
+        <div class="tile is-parent is-vertical box">
+          <div class="tile is-parent">
+            <div class="tile is-child">
+              <div class="columns is-centered">
+                <button class="button is-rounded" aria-haspopup="true" aria-controls="dropdown-menu2" id="selectPosSize" onclick="document.getElementById('posModal').classList.add('is-active')">
+                  Select Perpetuals &nbsp <i class="fas fa-plus" id="advancedOptionsArrow"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="tile is-parent py-0">
+            <div class="tile is-child is-4"></div>
+            <div class="tile is-child is-4">
+              <div id="posSizeBoxes">
+              </div>
+            </div>
+            <div class="tile is-child is-4"></div>
+          </div>
+
+          <div class="tile is-parent">
+            <div class="tile is-child">
+              <!-- <div class="columns is-centered">
+                <span>Account Equity &nbsp</span>
+                <div class="has-tooltip-multiline" data-tooltip="The amount of USDC in the DyDx account." style="display: inline;">
+                  <i class="fas fa-info-circle is-info"></i>
+                </div>
+              </div>
+
+              <div class="columns is-centered">
+                <div class="column is-one-third is-offest-one-third">
+                  <input class="input is-rounded" type="text" id="accountEquity" placeholder="e.g. 10000 for $10,000 USDC" value="100">
+                </div>
+              </div> -->
+              <div class="columns is-centered">
+                <div class="column is-one-quarter is-offest-4 has-text-centered">
+                  <label for="accountEquity">Account Equity</label>
+                  <div class="has-tooltip-multiline" data-tooltip="The amount of USDC in the DyDx account." style="display: inline;">
+                    <i class="fas fa-info-circle is-info"></i>
+                  </div>
+                  <input class="input is-rounded" type="text" id="accountEquity" placeholder="e.g. 10000 for $10,000 USDC" value="100">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tile is-parent">
+            <div class="tile is-child">
+              <div class="columns is-centered">
+                <button class="button is-rounded" id="advancedOptionsButton">
+                  Advanced Options &nbsp <i class="fas fa-arrow-down" id="advancedOptionsArrow"></i>
+                </button><br><br>
+              </div>
+            </div>
+          </div>
+
+          <div class="py-0" id="advancedOptions" style="display: none;">
+            <div class="tile is-parent">
+              <div class="tile is-child">
+                <div class="columns is-centered">
+                  <div class="column">
+                    <label for="annualDriftBox">Expected Annual Log-Returns</label>
+                    <div class="has-tooltip-multiline" data-tooltip="The expected log-returns of the perpetual one year from today. Log-returns is defined as ln(1+return_pct/100)." style="display: inline;">
+                      <i class="fas fa-info-circle is-info"></i>
+                    </div>
+                    <input class="input is-rounded" type="text" id="annualDriftBox" placeholder="">
+                  </div>
+
+                  <div class="column">
+                    <label for="annualVolBox">Expected Annual Volatility</label>
+                    <div class="has-tooltip-multiline" data-tooltip="The expected standard deviation of log-returns one year from today. This default value comes from annualizing the standard deviation of hourly log-returns over the previous 30 days. Log-returns is defined as ln(1+return_pct/100)." style="display: inline;">
+                      <i class="fas fa-info-circle is-info"></i>
+                    </div>
+                    <input class="input is-rounded" type="text" id="annualVolBox" placeholder="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tile is-parent">
+            <div class="tile is-child">
+              <div class="columns is-centered">
+                <button class="button is-primary is-rounded" type="button" id="getRiskStatsButton">
+                  &#9888 Get Risk Statistics &#9888
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="tile is-parent" style="display: none;">
+            <div class="tile is-child">
+              <div class="columns" id="statusBarContainer">
+                <div class="column is-one-third is-offset-one-third" id="progressBarDiv"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generated Content -->
+        <div id="generatedStats" style="display: none;">
+        <!-- <div id="generatedStats"> -->
+          
+          <!-- Health Score -->
+          <div class="tile is-parent is-vertical box px-0">
+            <div class="tile is-parent">
+              <div class="tile is-child">
+                <div class="columns is-centered">
+                  <div class="column is-4"></div>
+                  <div class="column is-4 has-text-centered">
+                    <p class="title" id="healthScoreTitle">
+                      Health Score 
+                      <span class="has-tooltip-multiline" data-tooltip="An estimate of probability of that your portfolio will not be liquidated within the next 7 days. Higher scores are better." style="text-decoration: none;">
+                        <i class="fas fa-info-circle is-info"></i>
+                      </span>
+                    </p>
+                    <p class="title" id="healthScoreValue"></p>
+                  </div>
+                  <div class="column is-4"></div>
+                </div>
+                <div class="columns is-centered">
+                  <p><i id="prescription"></i></p>
+                </div>
+              </div>
+            </div>            
+          </div>
+
+          <!-- Risk Synopsis -->
+          <div class="tile is-parent px-0">
+            <div class="tile is-child">            
+              <article class="message is-large is-primary">
+                <div class="message-header">
+                  <p>Risk Synopsis</p>
+                </div>
+                <div class="message-body">
+                  <p>
+                    This portfolio currently has <span id="openInterestSpan"></span> of open interest, and <span id="equitySpan"></span> of equity. The current portfolio requires <span id="collatReq"></span> of equity to stay above the liquidation point. We estimate the portfolio has a <span id="probLiq1Day"></span> chance of being liquidated within a day, and a <span id="probLiq7Day"></span> chance of being liquidated within 7 days.
+                    
+                    <!-- <br><br>
+
+                    To get a better understanding of value trajectories that this portfolio could follow, see <a href="#monteCarloSection">Monte Carlo Simulation</a>. For more metrics to help you understand your risk, see <a href="#riskStatsSection">Risk Statistics</a>. For more detail on how the calculations are performed, take a look at <a href="sausage.html">how the sausage gets made</a>. -->
+                  </p>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <!-- Liquidation Probabilities -->
+          <div class="tile is-vertical">
+            <div>
+              <div class="title">Liquidation Probabilities</div>
+              <p><i>The probability that the given portfolio will be liquidated within a given period of time. This is useful for understanding the risk of holding a leveraged portfolio for long.</i></p>
+            </div>
+            <div class="tile py-0 px-0">
+              <div class="tile is-parent">
+                <div class="tile is-child box" id="shortTermLiqProbBox">
+                  <canvas id="shortTermLiqProbChart" width="200" height="150"></canvas>
+                </div>
+              </div>
+
+              <div class="tile is-parent">
+                <div class="tile is-child box" id="longTermLiqProbBox">
+                  <canvas id="longTermLiqProbChart" width="200" height="150"></canvas>
+                </div>
+              </div>
+            </div>
+
+          <!-- Monte Carlo Section -->
+          <div class="tile is-parent is-vertical px-0">
+            <div class="title" id="monteCarloSection">Monte Carlo Price Simulation</div>
+            <p><i>These are possible paths that the portfolio's equity value can take, showing you what to expect from holding onto the portfolio. Modify drift and volatility "Advanced Options" to see how this graph changes!</i></p>
+            <div class="tile is-parent px-0">
+              <div class="tile is-child box">
+                <div class="columns is-centered">
+                  <canvas class="monteCarloChartSize" id="monteCarloChart" width="200" height="150"></canvas>
+                </div>
+
+                <div class="columns is-centered">
+                  <div class="column has-text-centered">
+                    <p><i>Blue Dashed Line = Initial Equity; Red Dashed Line = Estimated Liquidation Equity</i></p>
+                  </div>
+                </div>
+
+                <div class="tile is-parent">
+                  <div class="tile is-child">
+                    <div class="columns is-centered">
+
+                      <div class="column">
+                        <label for="nHoursMC">Look-Forward Hours</label>
+                        <div class="has-tooltip-multiline" data-tooltip="The number of hours to look forward when running Monte Carlo simulations." style="display: inline;">
+                          <i class="fas fa-info-circle is-info"></i>
+                        </div>
+                        <input class="input" type="text" id="nHoursMC" placeholder="e.g. 24 for 24 hours">
+                      </div>
+
+                      <div class="column">
+                        <label for="nCarloPaths">Number of Paths</label>
+                        <div class="has-tooltip-multiline" data-tooltip="The number of Monte Carlo price paths to simulate." style="display: inline;">
+                          <i class="fas fa-info-circle is-info"></i>
+                        </div>
+                        <input class="input" type="text" id="nCarloPaths" placeholder="e.g. 10 for 10 Monte Carlo Paths">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tile is-parent">
+                  <div class="tile is-child">
+                    <div class="columns is-centered">
+                      <button class="button is-primary is-rounded" type="button" id="runMCButton" onclick="runMonteCarlo()">
+                        🎲 &nbsp Run Monte Carlo Simulation &nbsp 🎲
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Risk Statistics -->
+          <div class="tile is-parent px-0">
+            <div class="tile is-parent">
+              <div class="tile is-child box">
+                <div class="columns is-centered">
+                  <h4 class="title is-4">General Stats</h4>  
+                </div>
+                <div class="columns is-centered">
+                  <table class="table is-full-width">
+                    <tbody id="scalarResultsTable"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="tile is-parent">
+              <div class="tile is-child box" id="monteCarloResults">
+                <div class="columns is-centered">
+                  <h4 class="title is-4">Monte Carlo Stats</h4>  
+                </div>
+                <div class="columns is-centered">
+                  <table class="table is-full-width">
+                    <tbody id="mcResultsTable"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+
+
+          </div>
+
+          <!-- Correlations -->
+          <div class="tile is-parent is-vertical box">
+            <div class="tile is-parent">
+                <div class="tile is-child">
+                  <h4 class="title is-4">Correlations</h4>
+                </div>
+              </div>
+
+              <div class="tile is-parent is-vertical">
+                <div class="tile is-child">
+                  <div class="columns is-centered">
+                    <canvas class="chartSize" id="correlationHeatMap" width="200" height="200"></canvas>
+                  </div>
+                  <div class="columns is-centered">
+                    <p><i>Pearson Correlation Coefficient of the Log Returns, ranging from -1 to 1. A value of -1 means the two assets are purely anti-correlated (when one goes up, the other typically goes down). A value of 1 means they are purely correlated. A value near 0 means there is no linear correlation relationship present. In general, your portfolio will be better diversified, and thus have lower variation in returns, if the assets in your portfolio are anti-correlated.</i></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <div id="modals">
+    <div class="modal" id="posModal">
+      <div class="modal-background" onclick="positionModalClose()"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Select DyDx Perpetuals</p>
+          <button class="delete" aria-label="close" onclick="positionModalClose()"></button>
+        </header>
+        <section class="modal-card-body" id="posModalCardBody"></section>
+        <footer class="modal-card-foot">
+          <div class="columns">
+            <div class="column has-text-centered">
+              <button class="button is-primary" onclick="positionModalClose()">Save Selections</button>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/footer.js"></script>
+  <script src="js/multiAsset.js"></script>
+  <script src="js/carlo.js"></script>
+  <script src="js/math.min.js"></script>
+  <script src="js/distributions.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/danfojs@0.3.3/lib/bundle.min.js"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>

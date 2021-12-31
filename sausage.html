@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sausage</title>
+
+  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css"> -->
+  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@creativebulma/bulma-tooltip@1.2.0/dist/bulma-tooltip.min.css" /> -->
+  <link rel="stylesheet" href="css/bulmaswatch.min.css" />
+
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    .main {
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+  </style>
+
+</head>
+
+<body>
+  
+  <div class="main">
+    <!-- Header -->
+    <section class="section pb-0">
+      <div class="columns">
+        <div class="column is-3" style="text-align:left;">
+          <button class="button is-rounded"><a href="single-asset.html">Single &nbsp Asset</a></button>
+        </div>
+        <div class="column is-6 has-text-centered">
+          <p class="title is-3">&#9888 DyDx Risk Station &#9888</p>
+        </div>
+        <div class="column is-3" style="text-align:right;">
+          <button class="button is-rounded"><a href="multi-asset.html">Multiple Assets</a></button>
+        </div>
+
+      </div>
+      
+      <div class="columns">
+        <div class="column has-text-centered">
+          <p><i>The comprehensive DyDx risk calculator.</i></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="tile is-ancestor">
+        <div class="tile is-vertical is-12">
+          <div class="tile is-parent" id="methods">
+            <div class="tile is-child">
+              <div class="content">
+                <p class="title">🌭 How the Sausage Gets Made 🌭</p>
+                <h3>Data Acquisition</h3>
+                  <p>
+                    All data used in these simulations comes directly from the DyDx API in the browser. There is no reliance on third-party architecture, so you can fork this site and make one of your own!
+                  </p>
+                <h3>Quick Formulas</h3>
+                  <p>
+                    Here are some quick formulas for the simpler metrics that were put to use here. In the following 
+                    <ul>
+                      <li>Position Size: \(s_\alpha\) is the position size of perpetual \(\alpha\) that one has in their portfolio</li>
+                      <li>Price: \(p_\alpha\) is the price of perpetual \(\alpha\)</li>
+                      <li>E: account equity</li>
+                      <li>Position Open Interest: \(I_\alpha = |s_\alpha| p_\alpha \) is the amount of notional value for perpetual \(\alpha\)</li>
+                      <li>Account Open Interest: \(I = \sum_{\alpha} I_\alpha \)</li>
+                      <li>Maintenance Margin Requirement: \(M_\alpha\) is the maintenance margin requirement; to avoid liquidation, ensure that \(E > \sum_{\alpha} M_\alpha I_\alpha\)</li>
+                      <li>Collateralization Ratio: \(C = E / I\) Amount of equity you have, divided by your open intest</li>
+                      <li>Crypto Net Exposure: \(X = \sum_\alpha s_\alpha p_\alpha\), is the number of notional dollars one is exposed to of crypto. This is useful for someone who wants a fixed dollar amount of exposure to crypto.</li>
+                      <li>Crypto Net Leverage: \(X_l = X/E\), is how leveraged your DyDx account is on crypto</li>
+                      <li>Leverage Ratio: \(L = 1/C\) is the leverage that one has in their perpetual account</li>
+                      <!-- <li>Beta: \(\beta \equiv X / I\), is the amount of directional exposure divided by the total amount of exposure. This is helpful for estimating how much open interest of a portfolio will change when the equity </li> -->
+                      <li>Returns (log): return from time 0 to time T is calculated as \( \log (p_T / p_0) \)</li>
+                      <li>Drift (\(\mu\)): calculated as the mean of log returns for a given window; here, the window is the previous 30 days; this is from hourly data in the single-asset calculator, daily data in the multi-asset calculator</li>
+                      <li>Returns Volatility (\(\sigma\)): the standard deviation of log returns for a given window; here, the window is the previous 30 days; this is from hourly data in the single-asset calculator, daily data in the multi-asset calculator</li>
+                      <li>Sharpe Ratio: mean of log-returns divided by stdev of log-returns, i.e. \(\mu/\sigma\). A higher Sharpe ratio is good, assuming one has risk-averse preferences.</li>
+                      <li>Probability of Passing a Threshold: see sections below for in-depth description</li>
+                    </ul>
+                  </p>
+                <h3>Probability of Liquidation</h3>
+                  <h4>A Primer on Brownian Motion</h4>
+                    <p>
+                      The probability of liquidation comes from a <strong>strong</strong> assumption that the price of perpetual contracts can be accurately modeled as a discretized <a href="https://en.wikipedia.org/wiki/Geometric_Brownian_motion">"Geometric Brownian Motion"</a>. In simple terms, a Geometric Brownian Motion (GBM for short) is a process where a variable \(S\), which represents a perpetual's price, changes over time, and at each tiny time interval \(\Delta t \), \(S\) changes by \( \mu + \sigma \mathcal{N}(0, 1) \) percent. Here, \(\mu \) is called the "percentage drift", and we can think of it like the driving force that pushes \(S\) up (if \(\mu\) is positive) or down (if \(\mu\) is negative) over time; \(\sigma\) is called the "percentage volatility", and you can think of it as the typical amount of deviation that you see from in change in each time step (i.e. the standard deviation of the change in \(S\) in each time step); \( \mathcal{N}(a, b)\) denotes a normal distribution with mean \(a\) and standard deviation \(b\), and since this is a random variable in our formula, its value <i>is not</i> constant on each time-step.
+                    </p>
+
+                  <h4>Probability of Liquidation via Geometric Brownian Motion</h4>
+                    <p>
+                      In order to find the probability of liquidation for a perpetual future, we can take the following steps:
+                      <ol>
+                        <li>Model the price of the perpetual future as a geometric brownian motion \(M(\mu, \sigma)\), where \(\mu\) and \(\sigma\) are approximated with historical data.</li>
+                        <li>Find the probability \(p\) that \(M\) would pass the liquidation threshold before an input time \(\tau\).</li>
+                        <li>Approximate that the perpetual future's probability of passing the liquidation threshold before time \(\tau\) is equal to \(p\).</li>
+                      </ol>
+
+                      <strong>This approach is not perfect!</strong> It is merely <i>one way</i> of approximating the price trajectory of an asset over a fixed time interval into the future, and it is not robust enough to incorporate black-swan like events. However, it should be noted that this model is very common among traders who deal in volatility, and it is one of the fundamental hypotheses present in the <a href="https://en.wikipedia.org/wiki/Black%E2%80%93Scholes_model#Fundamental_hypotheses">Black-Scholes-Merton model</a>, a widely-used model for pricing options.
+                    </p>
+
+                    <h5>Estimating <span style="text-transform: lowercase;">\(\mu\)</span> and <span style="text-transform: lowercase;">\(\sigma\)</span></h5>
+                      <p>
+                        To estimate \( \mu \), we take the following steps:
+                        <ol>
+                          <li>Retrieve the past 7 days' hourly open-high-low-close candle data from DyDx's public api, and also get the past 7 days' hourly funding rates.</li>
+                          <li>Compute the hourly percentage return for all 7-days worth of hours, according to: 
+                                  \[ R_t = (C_t - C_{t-1}) + F_t \]
+                              , where \(R_t\) is the return at the end of time \(t\), \(C_t\) is the close at the end of time \(t\), \(C_{t-1}\) is the close at the end of time \(t-1\), and \(F_t\) is the funding rate percentage that pays out at the end of time \(t\).
+                          </li>
+                          <li>Compute the mean of these hourly returns, and call it \(\hat{\mu}\). This is our approximation of the mean of hourly returns.</li>
+                        </ol>
+
+                        To estimate \(\sigma\), we use the same returns calculated above, and we take the standard deviation of those hourly returns, and we call the result \(\hat{\sigma}\). This is our approximation for the standard deviation of hourly returns.
+                      </p>
+
+                    <h5>Probability of \(M\)<span style="text-transform: lowercase;">\((\hat{\mu}, \hat{\sigma}) \)</span> Passing Liquidation Threshold</h5>
+                      <p>
+                        To calculate the probability that \(M\) passes the liquidation price $\(K\) before a time \(\tau\) can be computed by summing up the probability that the \(M\) crosses $\(K\) for the first time at time \(t\) for all \(t < \tau\). In other words, if \(f(t; \mu, \sigma)\) is the probability density of \(M\) passing $\(K\) for the first time at time \(t\), then we know that the probability of \(M\) crossing $\(K\) at some point before time \(\tau\) is given by
+                          \[\Pr(\text{passing before } \tau) = \int_{t=0}^{t=\tau} f(t; \mu, \sigma) dt .\]
+
+                        Great! But how do we calculate \(f\)? It turns out that the first passage time of \(M\) is given by an inverse gaussian distribution (<a href="https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution#Relationship_with_Brownian_motion">ref</a>)! That is, \(f\) is the probability density function of the Inverse Gaussian (IG) distribution with mean parameter \(\log \left(K/\mu \right)\) and shape parameter \(\left(\log\left(K/\sigma\right)\right)^2\). When \(\log(\mu)\) is 0, we simply take the limit of the IG as mean tends toward infinity, which is well-defined. Furthermore, for those familiar with statistics, our formula above gives us the cumulative distribution function (CDF) associated with \(f,\) and that CDF is known (<a href="https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution#Relationship_with_Brownian_motion">ref</a>):
+                          \[
+                            CDF(x; \psi, \lambda) = \Phi \left( 
+                              \sqrt{\frac{\lambda}{x}} \left(\frac{x}{\psi} - 1 \right)
+                            \right) + 
+                            \exp \left(\frac{2\lambda}{\psi} \right) 
+                            \Phi \left(
+                              -\sqrt{\frac{\lambda}{x}} \left(\frac{x}{\psi}+1 \right)
+                            \right),
+                          \]
+                        where \(\psi\) is the mean parameter, \(\lambda\) is the shape parameter, and \(\Phi\) is the standard normal CDF (cumulative distribution function of a random distribution with mean 0 and standard deviation 1).
+
+                        We estimate the probability of passing the threshold before time \(\tau\) by calculating \(CDF(\tau; \psi, \lambda) \) with the substitution \(\psi = \log \left(K/\hat{\mu} \right)\ \) and \(\lambda = \left(\log\left(K/\hat{\sigma}\right)\right)^2 \).
+                      </p>
+                <h3>Generalizing to a Portfolio</h3>
+                  <h4>The Problem</h4>
+                    <p>
+                      In the previous section, we were able to find the probability of liquidation for a single-position portfolio by simply referring to the Brownian motion of the underlying perpetual's price changes and funding rates. In doing so, we were able to assume that since the perpetual follows a GBM, then so does the equity account of our single-asset portfolio. But can we make the same claim about the equity account in a portfolio?
+
+                      <br><br>
+
+                      Well, the answer is.. sorta? Essentially, a portfolio is composed of sum of open positions \(S_\alpha\) in a sequence of perpetuals \alpha. That is, if we call the portfolio value at time \(t\) \(P_t\), then \(P_t = \sum_{\alpha} S_\alpha p_{\alpha,t}\), where \(p_{\alpha,t}\) is the price of perpetual \(\alpha\) at time \(t\). The question is: can the change in this portfolio price be modeled by a GBM, given that we assume \(p_{\alpha,t}\) follows a GBM?
+
+                      <br><br>
+
+                      If we are looking for 0 approximation, then the clear answer is "no". A GBM has a distribution of returns which follow a log normal distribution. \(P_t\), on the other hand, is a weighted sum of items with log normally distributed returns, so its returns come from a sum-of-log-normal distribution. And, as it turns out, we know approximately jack shit about the closed-form of sums of log-normal distributions <a href="http://www.ressources-actuarielles.net/ext/isfa/1226.nsf/9c8e3fd4d8874d60c1257052003eced6/c1748c50c4868c73c12579ad007022fa/$FILE/Dufresne.pdf">ref</a>. However, we <i>do</i> know that the sum of log-normal distributions comes out to be well-approximated by a log-normal distribution! This is an interesting fact that also happens to apply to normal distributions, but not to distributions in general. This approximation works best for the sum of a small number of log-normal distributions, all with similar variance and mean parameters. In our case, we are taking a weighted sum of log-normal distributions of returns from perpetuals, so I believe the approximation is kosher. For this reason, I decided that it would be OK to model the distribution of portfolio returns as following a log-normal distribution, and thus apply the techniques from the single-asset portfolio case for volatility parameter estimation and then probability of liquidation for a given portfolio.
+                    </p>
+              </div>
+            </div>
+          </div> 
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/footer.js"></script>
+
+</body>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Single Asset Risk</title>
+
+  <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@creativebulma/bulma-tooltip@1.2.0/dist/bulma-tooltip.min.css" />
+  <link rel="stylesheet" href="css/bulmaswatch.min.css" />
+
+  <style>
+    .main {
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+  </style>
+
+</head>
+<body>
+  <div class="main">
+    <!-- Header -->
+    <section class="section pb-0">
+      <div class="columns">
+        <div class="column is-3" style="text-align:left;">
+          <button class="button is-rounded"><a href="multi-asset.html">Multiple Assets</a></button>
+        </div>
+        <div class="column is-6 has-text-centered">
+          <p class="title is-3">&#9888 DyDx Risk Station &#9888</p>
+        </div>
+        <div class="column is-3" style="text-align:right;">
+          <button class="button is-rounded"><a href="sausage.html">Documentation</a></button>
+        </div>
+      </div>
+
+      <div class="columns pb-0">
+        <div class="column has-text-centered">
+          <p><i>The comprehensive DyDx risk calculator.</i></p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Tiled Layout -->
+    <section class="section">
+      <div class="tile is-ancestor">
+        <!-- Contains all rows of tiles -->
+        <div class="tile is-vertical is-12">
+
+          <!-- Row 1: User Input & Basic Metrics -->
+          <div class="tile is-parent">
+            <!-- Coin & Params Box -->
+            <div class="tile is-parent">
+              <!-- The Selection Box -->
+                <!-- <div class="tile is-parent is-vertical box"> -->
+                <div class="tile is-parent is-vertical box">
+                  <div class="tile is-parent">
+                    <div class="tile is-child">
+                      <div class="columns is-centered">
+                        <h4 class="title is-4">Select a Contract &nbsp</h4>
+                        <div data-tooltip="Choose from DyDx's perpetual contracts."><i class="fas fa-info-circle is-info"></i></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="tile is-parent">
+                    <div class="tile is-child">
+                      <div class="columns is-centered">
+                        <div class="field">
+                          <div class="control">
+                            <div class="select is-rounded">
+                              <select id="assetSelect">
+                                <option selected="true"></option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="tile is-parent">
+                    <div class="tile is-child">
+                      <div class="columns" id="statusBarContainer">
+                        <div class="column is-one-third is-offset-one-third" id="progressBarDiv"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="tile is-parent" id="volParamsParentDiv" style="display: none;">
+
+                    <div class="tile is-parent">
+                      <div class="tile is-child">
+                        <div class="columns is-centered">
+                          <h4 class="title is-4">Enter Position Size & Collateral &nbsp</h4>
+                          <div data-tooltip="Choose from DyDx's perpetual contracts."><i class="fas fa-info-circle is-info"></i></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="tile is-parent">
+                      <div class="tile is-child">
+                        <div class="columns is-centered">
+                          <div class="column">
+                            <label for="positionSize">Position Size</label>
+                            <div class="has-tooltip-multiline" data-tooltip="The number of coins you are exposed to. This can be positive (e.g. +5 means you are long 5 coins) or negative (e.g. -5 means you are short 5 coins)" style="display: inline;">
+                              <i class="fas fa-info-circle is-info"></i>
+                            </div>
+                            <input class="input is-rounded" type="text" id="positionSize" placeholder="e.g. -1 if short 1 coin">
+                          </div>
+
+                          <div class="column">
+                            <label for="collateral">Account Collateral</label>
+                            <div class="has-tooltip-multiline" data-tooltip="The amount of USDC in the DyDx account." style="display: inline;">
+                              <i class="fas fa-info-circle is-info"></i>
+                            </div>
+                            <input class="input is-rounded" type="text" id="collateral" placeholder="e.g. 10000 for $10,000 USDC">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    
+                    <div class="tile is-parent">
+                      <div class="tile is-child">
+                        <div class="columns is-centered">
+                          <button class="button is-rounded" id="advancedOptionsButton">
+                            Advanced Options &nbsp <i class="fas fa-arrow-down" id="advancedOptionsArrow"></i>
+                          </button><br><br>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div id="advancedOptions" style="display: none;">
+                      <div class="tile is-parent">
+                        <div class="tile is-child">
+                          <div class="columns is-centered">
+                            <div class="column">
+                              <label for="annualDriftBox">Expected Annual Log-Returns</label>
+                              <div class="has-tooltip-multiline" data-tooltip="The expected log-return of the perpetual one year from today. Log-returns is defined as ln(1+return_pct/100)." style="display: inline;">
+                                <i class="fas fa-info-circle is-info"></i>
+                              </div>
+                              <input class="input is-rounded" type="text" id="annualDriftBox" placeholder="">
+                            </div>
+
+                            <div class="column">
+                              <label for="annualVolBox">Expected Annual Volatility</label>
+                              <div class="has-tooltip-multiline" data-tooltip="The expected standard deviation of log-returns one year from today. This default value comes from annualizing the standard deviation of hourly log-returns over the previous 30 days. Log-returns is defined as ln(1+return_pct/100)." style="display: inline;">
+                                <i class="fas fa-info-circle is-info"></i>
+                              </div>
+                              <input class="input is-rounded" type="text" id="annualVolBox" placeholder="">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="tile is-parent">
+                      <div class="tile is-child">
+                        <div class="columns is-centered">
+                          <button class="button is-primary is-rounded" type="button" id="getPersonalStatsButton">
+                            &#9888 Get Risk Statistics &#9888
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+            </div>
+          </div>
+
+          <!-- Row 2: Probability of Stop Loss Graphs -->
+          <!-- <div class="tile is-parent is-vertical box" id="liqProbBox" style="display: none;"> -->
+          <div class="tile is-parent is-vertical" id="liqProbBox" style="display: none;">
+            <div class="tile is-parent">
+              <div class="tile is-parent" id="liquidationProbSection">
+                <div class="title">Liquidation Probabilities</div>
+              </div>
+            </div>
+
+            
+            <div class="tile is-parent">
+              <div class="tile is-parent">
+                <div class="tile is-child box" id="shortTermLiqProbBox">
+                  <canvas id="shortTermLiqProbChart" width="200" height="150"></canvas>
+                </div>
+              </div>
+
+              <div class="tile is-parent">
+                <div class="tile is-child box" id="longTermLiqProbBox">
+                  <canvas id="longTermLiqProbChart" width="200" height="150"></canvas>  
+                </div>
+              </div>
+            </div>
+
+            <div class="tile is-parent is-vertical">
+              <div class="tile is-parent">
+                <div class="title" id="monteCarloSection">Monte Carlo Price Simulation</div>
+              </div>
+
+              <div class="tile is-parent">
+                <div class="tile is-child box" id="shortTermLiqProbBox">
+                  <!-- <div class="chart-container" style="position: relative; height:40vh; width:80vw"> -->
+                    <canvas id="monteCarloChart" width="200" height="150"></canvas>
+                  <!-- </div> -->
+
+                  <div class="tile is-parent">
+                    <div class="tile is-child">
+                      <div class="columns is-centered">
+                        <div class="column">
+                          <label for="stopLossBox">Stop Loss Price</label>
+                          <div class="has-tooltip-multiline" data-tooltip="The price at which you would take loss on your position. This defaults to the liquidation price of the perpetual." style="display: inline;">
+                            <i class="fas fa-info-circle is-info"></i>
+                          </div>
+                          <input class="input is-rounded" type="text" id="stopLossBox">
+                        </div>
+
+                        <div class="column">
+                          <label for="takeProfitBox">Take Profit Price</label>
+                          <div class="has-tooltip-multiline" data-tooltip="The price at which you would take profit on your position." style="display: inline;">
+                            <i class="fas fa-info-circle is-info"></i>
+                          </div>
+                          <input class="input is-rounded" type="text" id="takeProfitBox" placeholder="">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="tile is-parent">
+                    <div class="tile is-child">
+                      <div class="columns is-centered">
+
+                        <div class="column">
+                          <label for="nHoursMC">Look-Forward Hours</label>
+                          <div class="has-tooltip-multiline" data-tooltip="The number of hours to look forward when running Monte Carlo simulations." style="display: inline;">
+                            <i class="fas fa-info-circle is-info"></i>
+                          </div>
+                          <input class="input is-rounded" type="text" id="nHoursMC" placeholder="e.g. 24 for 24 hours">
+                        </div>
+
+                        <div class="column">
+                          <label for="nCarloPaths">Number of Paths</label>
+                          <div class="has-tooltip-multiline" data-tooltip="The number of Monte Carlo price paths to simulate." style="display: inline;">
+                            <i class="fas fa-info-circle is-info"></i>
+                          </div>
+                          <input class="input is-rounded" type="text" id="nCarloPaths" placeholder="e.g. 10 for 10 Monte Carlo Paths">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="tile is-parent">
+                    <div class="tile is-child">
+                      <div class="columns is-centered">
+                        <button class="button is-primary is-rounded" type="button" id="runMCButton">
+                          🎲 &nbsp Run Monte Carlo Simulation &nbsp 🎲
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Risk Statistics -->
+          <div class="tile is-parent" id="scalarCalculationsBox" style="display: none;">
+            <div class="tile is-parent is-vertical">
+              <div class="tile is-parent">
+                <h3 class="title">Risk Statistics</h3>
+              </div>
+
+              <div class="tile is-parent">
+                <div class="tile is-parent box">
+                  <div class="tile is-parent">
+                    <div class="tile is-child box">
+                      <div class="columns is-centered">
+                        <h4 class="title is-4">General Stats</h4>  
+                      </div>
+                      <div class="columns is-centered">
+                        <table class="table is-full-width">
+                          <tbody id="scalarResultsTable"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="tile is-parent">
+                    <div class="tile is-child box" id="monteCarloResults">
+                      <div class="columns is-centered">
+                        <h4 class="title is-4">Monte Carlo Stats</h4>  
+                      </div>
+                      <div class="columns is-centered">
+                        <table class="table is-full-width">
+                          <tbody id="mcResultsTable"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Risk Report -->
+          <div class="tile is-parent" id="riskReport" style="display: none;">
+            <div class="tile is-child">            
+              <article class="message is-large is-primary">
+                <div class="message-header">
+                  <p>Risk Synopsis</p>
+                </div>
+                <div class="message-body">
+                  <p>
+                    This position has a leverage ratio of <span id="levRatioSpan"></span>, and <span id="liqPriceMsgSpan"></span>
+
+                    <br><br>
+
+                    For more detail on how the calculations are performed, see <a href="sausage.html">how the sausage gets made</a>.
+                  </p>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/footer.js"></script>
+  <script src="js/singleAsset.js"></script>
+  <script src="js/carlo.js"></script>
+  <script src="js/math.min.js"></script>
+  <script src="js/distributions.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/danfojs@0.3.3/lib/bundle.min.js"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+</body>
+</html>
