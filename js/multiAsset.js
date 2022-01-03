@@ -664,6 +664,14 @@ async function setMessage () {
         probLiq7Day = probOfPassingThresh (dailyDriftEstimate, dailyVolEstimate, v0, v_liq_approx, 7);
     }
 
+    if (Number.isNaN(probLiq1Day)) {
+        probLiq1Day = 0;
+    }
+
+    if (Number.isNaN(probLiq7Day)) {
+        probLiq7Day = 0;
+    }
+
     fillInSpan("probLiq1Day", `${(100*probLiq1Day).toFixed(4)}%`);
     fillInSpan("probLiq7Day", `${(100*probLiq7Day).toFixed(4)}%`);
 
